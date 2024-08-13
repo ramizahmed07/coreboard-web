@@ -1,6 +1,7 @@
-import { httpClient } from '../../lib/httpClient';
-import { User } from '../../contexts/auth';
 import { useQuery } from '@tanstack/react-query';
+
+import { httpClient } from '../lib/httpClient';
+import { User } from '../contexts/auth';
 
 type Response = {
   students: User[];

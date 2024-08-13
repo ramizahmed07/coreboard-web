@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import useFetchBoard from './use-fetch-board';
+import AssignToStudents from '../../../components/AssignToStudents';
 import PageContainer from '../../../components/PageContainer';
 import useFetchStudent from './use-fetch-student';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Component1Icon, UploadIcon } from '@radix-ui/react-icons';
 import { httpClient } from '../../../lib/httpClient';
-import useFetchBoard from './use-fetch-board';
-import { Loader } from '../../../components/Loader';
+import useCreateBoard from '../../../api/use-create-board';
 
 const board: any = [
   {},
@@ -35,14 +36,24 @@ const board: any = [
   {},
 ];
 
-export default function StudentPages() {
-  const [isSaving, setIsSaving] = useState(false);
+export default function StudentPages({ userId }: { userId?: string }) {
+  console.log('userId', userId);
   const { id } = useParams<{ id: string }>();
-  const { data, isFetching } = useFetchStudent(id as string);
-  const boardResponse: any = useFetchBoard(id as string);
+  const { pathname } = useLocation();
+  const { mutate, isPending } = useCreateBoard();
+  const { data, isLoading } = useFetchStudent(
+    (userId || id) as string,
+    userId ? pathname + userId : pathname
+  );
+  console.log('data', data);
+  const boardResponse: any = useFetchBoard(
+    (userId || id) as string,
+    userId ? pathname + userId : pathname
+  );
   const { student } = data || {};
-  const [pages, setPages] = useState<any>([board]);
+  const [pages, setPages] = useState<any>([[...board]]);
   const [selected, setSelected] = useState(0);
+  const isHome = pathname === '/';
 
   useEffect(() => {
     if (boardResponse.data?.board?.pages?.length) {
@@ -81,38 +92,30 @@ export default function StudentPages() {
     }
   };
 
-  const handleSave = async () => {
-    try {
-      setIsSaving(true);
-      await httpClient.post('/create-board', {
-        data: JSON.stringify({ pages, studentId: student?._id }),
-        headers: {
-          'Content-Type': 'application/json',
-          'x-authorization': localStorage.getItem('access_token'),
-        },
-      });
-    } catch (error) {
-      toast.error('Error saving the board');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  if (!isFetching && !student) return <Navigate to='/not-found' />;
-
-  if (isFetching || boardResponse.isFetching)
+  if (isLoading || boardResponse.isLoading)
     return (
       <div className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full flex justify-center items-center'>
         <Component1Icon className='h-10 w-10 animate-spin' />
       </div>
     );
+
   return (
-    <PageContainer>
+    <PageContainer className='mt-4'>
       <div className='flex items-center justify-between'>
         <Button variant='secondary'>User - {student?.username}</Button>
-        <Button onClick={handleSave}>
-          {isSaving && <Component1Icon className='mr-2 animate-spin' />} Save
-        </Button>
+        {!userId &&
+          (isHome ? (
+            <AssignToStudents pages={pages} />
+          ) : (
+            <Button
+              onClick={() => {
+                mutate({ pages, studentIds: [student?._id as string] });
+              }}
+            >
+              {isPending && <Component1Icon className='mr-2 animate-spin' />}{' '}
+              Save
+            </Button>
+          ))}
       </div>
 
       <section className='mt-4'>
@@ -128,24 +131,23 @@ export default function StudentPages() {
               Page {idx + 1}
             </Button>
           ))}
-          <Button
-            onClick={() => {
-              setPages([...pages, board]);
-              setSelected(pages.length);
-            }}
-            className='rounded-full'
-            variant='secondary'
-          >
-            +
-          </Button>
-        </div>
-        <div className='grid grid-cols-5 gap-2'>
-          {pages[selected]?.map((row: any, idx: number) => (
-            <div
-              className='shadow-md border p-2 rounded-md h-[300px] flex flex-col'
-              key={idx}
+          {!userId && (
+            <Button
+              onClick={() => {
+                setPages([...pages, [...board]]);
+                setSelected(pages.length);
+              }}
+              className='rounded-full'
+              variant='secondary'
             >
-              <div className='flex justify-center items-center h-[230px] relative bg-slate-100 text-center flex-1 mb-2'>
+              +
+            </Button>
+          )}
+        </div>
+        <div className='grid grid-cols-5 bg-slate-100 shadow-md rounded-md gap-2'>
+          {pages[selected]?.map((row: any, idx: number) => (
+            <div className='h-[210px] flex flex-col' key={idx}>
+              <div className='flex justify-center items-center min-h-[160px] h-[160px] relative text-center flex-1 mb-2'>
                 {row.image && (
                   <img
                     src={row.image}
@@ -153,15 +155,20 @@ export default function StudentPages() {
                     className='w-full h-full object-cover'
                   />
                 )}
-                <Input
-                  onChange={(e) => handleFileChange(e, idx)}
-                  type='file'
-                  accept='image/*'
-                  className='block h-full w-full absolute inset-0 opacity-0 cursor-pointer'
-                />
-                {row.image ? null : <UploadIcon width={25} height={25} />}
+                {!userId && (
+                  <>
+                    <Input
+                      onChange={(e) => handleFileChange(e, idx)}
+                      type='file'
+                      accept='image/*'
+                      className='block h-full w-full absolute inset-0 opacity-0 cursor-pointer'
+                    />
+                    {row.image ? null : <UploadIcon width={25} height={25} />}
+                  </>
+                )}
               </div>
               <Input
+                disabled={!!userId}
                 value={row?.title || ''}
                 onChange={(e) => {
                   const newPages = [...pages];
@@ -173,7 +180,7 @@ export default function StudentPages() {
                 }}
                 type='text'
                 placeholder='Description'
-                className='h-full max-h-[40px]'
+                className='h-[50px] disabled:opacity-100 disabled:cursor-default'
               />
             </div>
           ))}

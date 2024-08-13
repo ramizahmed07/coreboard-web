@@ -14,9 +14,11 @@ const fetchStudent = async (_id: string) => {
   });
 };
 
-export default function useFetchStudent(_id: string) {
+export default function useFetchStudent(_id: string, pathname: string) {
   return useQuery({
     queryKey: ['student', { _id }],
     queryFn: () => fetchStudent(_id),
+    staleTime: Infinity,
+    enabled: pathname !== '/',
   });
 }

@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 export default function Header() {
   const navigate = useNavigate();
-  const { isAuthenticated, dispatch } = useAuth();
+  const { isAuthenticated, dispatch, user } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -39,9 +39,11 @@ export default function Header() {
         <Button variant='secondary' asChild>
           <Link to='/'>Home</Link>
         </Button>
-        <Button variant='secondary' asChild>
-          <Link to='/manage-students'>Manage Students</Link>
-        </Button>
+        {user?.role === 'teacher' && (
+          <Button variant='secondary' asChild>
+            <Link to='/manage-students'>Manage Students</Link>
+          </Button>
+        )}
       </div>
       <div>
         <Button onClick={handleLogout}>Logout</Button>

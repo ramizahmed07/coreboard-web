@@ -1,4 +1,7 @@
-import useFetchStudents from './use-fetch-students';
+import useFetchStudents from '../../api/use-fetch-students';
+import UpdateStudent from '../UpdateStudent';
+import DeleteStudent from '../DeleteStudent';
+
 import {
   Table,
   TableBody,
@@ -9,10 +12,9 @@ import {
   TableRow,
 } from '../ui/table';
 import { Loader } from '../Loader';
-import UpdateStudent from '../UpdateStudent';
-import DeleteStudent from '../DeleteStudent';
 import { Button } from '../ui/button';
 import { useNavigate } from 'react-router-dom';
+import { User } from '../../contexts/auth';
 
 export default function StudentList() {
   const { data, isLoading } = useFetchStudents();
@@ -35,7 +37,7 @@ export default function StudentList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {students?.map((user, idx) => (
+            {students?.map((user: User, idx: number) => (
               <TableRow key={user._id}>
                 <TableCell className='font-medium'>{idx + 1}</TableCell>
                 <TableCell>{user.username}</TableCell>

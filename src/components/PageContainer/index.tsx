@@ -8,5 +8,5 @@ export default function PageContainer({
   className?: string;
   children: React.ReactNode;
 }) {
-  return <div className={cn('mt-10', className)}>{children}</div>;
+  return <div className={cn('', className)}>{children}</div>;
 }

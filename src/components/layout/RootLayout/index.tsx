@@ -11,7 +11,9 @@ function Container({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn('p-10 max-w-5xl m-auto', className)}>{children}</div>
+    <div className={cn('p-4 w-full max-w-5xl m-auto', className)}>
+      {children}
+    </div>
   );
 }
 

@@ -9,9 +9,11 @@ const fetchBoard = async (_id: string) => {
   });
 };
 
-export default function useFetchBoard(_id: string) {
+export default function useFetchBoard(_id: string, pathname: string) {
   return useQuery({
     queryKey: ['board', { _id }],
     queryFn: () => fetchBoard(_id),
+    staleTime: Infinity,
+    enabled: pathname !== '/',
   });
 }

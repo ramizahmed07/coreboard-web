@@ -32,7 +32,7 @@ const Modal = ({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className='mt-3'>{children}</div>
+        <div>{children}</div>
       </DialogContent>
     </Dialog>
   );
