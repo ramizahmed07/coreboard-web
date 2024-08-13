@@ -190,9 +190,12 @@ export default function StudentPages({ userId }: { userId?: string }) {
             </Button>
           )}
         </div>
-        <div className='grid grid-cols-3 md:grid-cols-5 border-black border bg-slate-100  rounded-md'>
+        <div className='grid grid-cols-3 md:grid-cols-5 bg-black gap-[1px] border-black border'>
           {pages[selected]?.map((row: any, idx: number) => (
-            <div className='grid-item h-[210px] flex flex-col' key={idx}>
+            <div
+              className='grid-item h-[210px] flex flex-col bg-slate-100'
+              key={idx}
+            >
               <div className='flex justify-center items-center min-h-[160px] h-[160px] relative text-center flex-1 mb-2'>
                 {row.image && (
                   <img
@@ -230,6 +233,7 @@ export default function StudentPages({ userId }: { userId?: string }) {
               />
             </div>
           ))}
+          <div className='bg-slate-100 block md:hidden'></div>
         </div>
       </section>
     </PageContainer>
