@@ -37,7 +37,6 @@ const board: any = [
 ];
 
 export default function StudentPages({ userId }: { userId?: string }) {
-  console.log('userId', userId);
   const { id } = useParams<{ id: string }>();
   const { pathname } = useLocation();
   const { mutate, isPending } = useCreateBoard();
@@ -45,7 +44,6 @@ export default function StudentPages({ userId }: { userId?: string }) {
     (userId || id) as string,
     userId ? pathname + userId : pathname
   );
-  console.log('data', data);
   const boardResponse: any = useFetchBoard(
     (userId || id) as string,
     userId ? pathname + userId : pathname
