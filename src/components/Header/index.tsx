@@ -24,7 +24,7 @@ export default function Header() {
         replace: true,
       });
     } catch (error) {
-      console.log({ error });
+      console.log(error);
       toast.error(
         'There was some issue logging you out. Please try again later.'
       );

@@ -212,7 +212,6 @@ export default function StudentPages({ userId }: { userId?: string }) {
                           return;
                         }
                         if (pages.length === 2) {
-                          console.log('true');
                           setTimeout(() => {
                             setSelected(0);
                           }, 0);
