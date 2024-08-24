@@ -1,4 +1,4 @@
-import { Navigate, useParams, rout, useNavigate } from 'react-router-dom';
+import { Navigate, useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import useResetPassword from './api/use-reset-password';
