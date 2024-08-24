@@ -66,6 +66,42 @@ export default function StudentPages({ userId }: { userId?: string }) {
     }
   }, [boardResponse.data]);
 
+  const getBrowserVoice = (voices: any) => {
+    const browserVoiceIndMap: any = {
+      chrome: 3,
+      firefox: 8,
+    }
+    let browser = ''
+    if (navigator.userAgent.indexOf("Chrome") != -1) {
+      browser = 'chrome'
+    } else if (navigator.userAgent.indexOf("Safari") != -1) {
+      browser = 'safari'
+    } else if (navigator.userAgent.indexOf("Firefox") != -1) {
+      browser = 'firefox'
+    }
+    const ind = browserVoiceIndMap[browser]
+    let voice
+    if (ind && voices?.length && voices.length > ind && voices[ind]) {
+      voice = voices[ind]
+    }
+    if (!voice) {
+      voice = voices.find((v: any) => ['en-GB', 'en'].includes(v?.lang))
+    }
+    if (!voice) {
+      voice = voices[0]
+    }
+    return voice
+  }
+
+  const speak = (description: string) => {
+    const voices = speechSynthesis.getVoices()
+    if (!voices.length) return
+    const utterance = new SpeechSynthesisUtterance(description)
+    const voice = getBrowserVoice(voices)
+    utterance.voice = voice
+    speechSynthesis.speak(utterance)
+  }
+
   const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
@@ -251,6 +287,11 @@ export default function StudentPages({ userId }: { userId?: string }) {
             <div
               className='grid-item h-[210px] flex flex-col bg-slate-100'
               key={idx}
+              onClick={!userId ? undefined : () => {
+                if (row?.title) {
+                  speak(row.title)
+                }
+              }}
             >
               <div className='flex justify-center items-center min-h-[160px] h-[160px] relative text-center flex-1'>
                 {row.image && (
