@@ -1,6 +1,7 @@
 export function arePagesEmpty(arr: any) {
-  for (const subArr of arr) {
-    for (const obj of subArr) {
+  // [{name:"Page", page:[]} ]
+  for (const page of arr) {
+    for (const obj of page.page) {
       if (Object.keys(obj).length > 0) {
         return false; // If any object has properties, return false
       }

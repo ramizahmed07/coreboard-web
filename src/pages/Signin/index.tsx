@@ -107,14 +107,14 @@ export default function Signin() {
       <Separator />
 
       <div className='flex flex-col'>
-        {/* <Link to='/forgot-password'>
+        <Link to='/forgot-password'>
           <Button
             variant='link'
             className='py-0 text-xs font-normal text-muted-foreground underline'
           >
             {'Forgot Password?'}
           </Button>
-        </Link> */}
+        </Link>
         <Link to='/signup'>
           <Button
             variant='link'

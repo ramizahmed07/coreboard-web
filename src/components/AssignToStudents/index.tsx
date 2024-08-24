@@ -82,6 +82,7 @@ export default function AssignToStudents({ pages }: any) {
         onClick={async () => {
           await mutateAsync({ pages, studentIds, isAppend: true });
           setIsModalOpen(false);
+          setStudentIds([]);
         }}
         className='w-full mt-4'
       >
