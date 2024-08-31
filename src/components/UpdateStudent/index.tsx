@@ -1,9 +1,10 @@
 import { Component1Icon, Pencil1Icon } from '@radix-ui/react-icons';
+
 import Modal from '../Modal';
+import useUpdateStudent from './use-update-student';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useState } from 'react';
-import useUpdateStudent from './use-update-student';
 import { User } from '../../contexts/auth';
 
 export default function UpdateStudent({ user }: { user: User }) {

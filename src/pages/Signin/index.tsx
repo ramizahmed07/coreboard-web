@@ -25,8 +25,10 @@ export default function Signin() {
     setData({ ...data, [e.target.name]: e.target.value });
   };
 
-  const handleSignin = async () => {
+  const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
+      e.preventDefault();
+      if (isBtnDisabled) return;
       setIsLoading(true);
 
       if (!username)
@@ -80,7 +82,7 @@ export default function Signin() {
         </p>
       </div>
 
-      <div className='grid gap-2 w-full'>
+      <form onSubmit={handleSignin} className='grid gap-2 w-full'>
         <Input
           value={username}
           onChange={handleChange}
@@ -95,15 +97,11 @@ export default function Signin() {
           type='password'
           placeholder='password'
         />
-        <Button
-          onClick={handleSignin}
-          disabled={isBtnDisabled}
-          className='w-full'
-        >
+        <Button type='submit' disabled={isBtnDisabled} className='w-full'>
           {isLoading && <Component1Icon className='mr-2 animate-spin' />}
           Sign in
         </Button>
-      </div>
+      </form>
       <Separator />
 
       <div className='flex flex-col'>

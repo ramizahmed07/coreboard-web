@@ -2,7 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Component1Icon, Cross2Icon } from '@radix-ui/react-icons';
 
+import GridCell from './grid-cell';
 import useFetchBoard from './use-fetch-board';
 import AssignToStudents from '../../../components/AssignToStudents';
 import PageContainer from '../../../components/PageContainer';
@@ -10,9 +12,10 @@ import useFetchStudent from './use-fetch-student';
 import useCreateBoard from '../../../api/use-create-board';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
-import { Component1Icon, Cross2Icon, UploadIcon } from '@radix-ui/react-icons';
 import { httpClient } from '../../../lib/httpClient';
 import { cn } from '../../../lib/utils';
+import Modal from '../../../components/Modal';
+import DetailedGridCell from './detailed-grid-cell';
 
 const pageArr = [
   {},
@@ -55,6 +58,8 @@ export default function StudentPages({ userId }: { userId?: string }) {
     userId ? pathname + userId : pathname
   );
   const { student } = data || {};
+  const [open, setOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<any>(null);
   const [pages, setPages] = useState<any>([{ ...page, page: [...pageArr] }]);
   const [selected, setSelected] = useState(0);
   const [editable, setEditable] = useState<number | null>(null);
@@ -65,42 +70,6 @@ export default function StudentPages({ userId }: { userId?: string }) {
       setPages(boardResponse?.data?.board.pages);
     }
   }, [boardResponse.data]);
-
-  const getBrowserVoice = (voices: any) => {
-    const browserVoiceIndMap: any = {
-      chrome: 3,
-      firefox: 8,
-    }
-    let browser = ''
-    if (navigator.userAgent.indexOf("Chrome") != -1) {
-      browser = 'chrome'
-    } else if (navigator.userAgent.indexOf("Safari") != -1) {
-      browser = 'safari'
-    } else if (navigator.userAgent.indexOf("Firefox") != -1) {
-      browser = 'firefox'
-    }
-    const ind = browserVoiceIndMap[browser]
-    let voice
-    if (ind && voices?.length && voices.length > ind && voices[ind]) {
-      voice = voices[ind]
-    }
-    if (!voice) {
-      voice = voices.find((v: any) => ['en-GB', 'en'].includes(v?.lang))
-    }
-    if (!voice) {
-      voice = voices[0]
-    }
-    return voice
-  }
-
-  const speak = (description: string) => {
-    const voices = speechSynthesis.getVoices()
-    if (!voices.length) return
-    const utterance = new SpeechSynthesisUtterance(description)
-    const voice = getBrowserVoice(voices)
-    utterance.voice = voice
-    speechSynthesis.speak(utterance)
-  }
 
   const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -131,6 +100,18 @@ export default function StudentPages({ userId }: { userId?: string }) {
         toast.error('Error uploading file');
       }
     }
+  };
+
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    idx: number
+  ) => {
+    const newPages = [...pages];
+    newPages[selected].page[idx] = {
+      ...newPages[selected].page[idx],
+      title: e.target.value,
+    };
+    setPages(newPages);
   };
 
   if (isLoading || boardResponse.isLoading)
@@ -283,54 +264,49 @@ export default function StudentPages({ userId }: { userId?: string }) {
           )}
         </div>
         <div className='grid grid-cols-3 md:grid-cols-5 bg-black gap-[1px] border-black border'>
-          {pages[selected]?.page?.map((row: any, idx: number) => (
-            <div
-              className='grid-item h-[210px] flex flex-col bg-slate-100'
-              key={idx}
-              onClick={!userId ? undefined : () => {
-                if (row?.title) {
-                  speak(row.title)
-                }
-              }}
-            >
-              <div className='flex justify-center items-center min-h-[160px] h-[160px] relative text-center flex-1'>
-                {row.image && (
-                  <img
-                    src={row.image}
-                    alt='image'
-                    className='w-full h-full object-cover'
+          {pages[selected]?.page?.map((row: any, idx: number) =>
+            userId ? (
+              <Modal
+                key={idx}
+                title='Coreboard'
+                trigger={
+                  <GridCell
+                    modal={true}
+                    key={idx}
+                    row={row}
+                    userId={userId}
+                    handleCellClick={() => {
+                      setSelectedRow(row);
+                      setOpen(true);
+                    }}
+                    handleFileChange={(
+                      e: React.ChangeEvent<HTMLInputElement>
+                    ) => handleFileChange(e, idx)}
+                    handleDescriptionChange={(
+                      e: React.ChangeEvent<HTMLInputElement>
+                    ) => handleDescriptionChange(e, idx)}
                   />
-                )}
-                {!userId && (
-                  <>
-                    <Input
-                      onChange={(e) => handleFileChange(e, idx)}
-                      type='file'
-                      accept='image/*'
-                      className='block h-full p-0 w-full absolute inset-0  opacity-0 cursor-pointer'
-                    />
-                    {row.image ? null : <UploadIcon width={25} height={25} />}
-                  </>
-                )}
-              </div>
-              <Input
-                disabled={!!userId}
-                value={row?.title || ''}
-                onChange={(e) => {
-                  const newPages = [...pages];
-                  newPages[selected].page[idx] = {
-                    ...newPages[selected].page[idx],
-                    title: e.target.value,
-                  };
-                  setPages(newPages);
-                }}
-                type='text'
-                placeholder='Description'
-                className='border-none outline-none focus-visible:ring-0 shadow-none input-field
-                  h-[40px] disabled:opacity-100 disabled:cursor-default'
+                }
+                description='Coreboard detailed view'
+                open={open && selectedRow === row && !!Object.keys(row).length}
+                setOpen={setOpen}
+              >
+                <DetailedGridCell row={row} />
+              </Modal>
+            ) : (
+              <GridCell
+                userId={userId}
+                key={idx}
+                row={row}
+                handleFileChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleFileChange(e, idx)
+                }
+                handleDescriptionChange={(
+                  e: React.ChangeEvent<HTMLInputElement>
+                ) => handleDescriptionChange(e, idx)}
               />
-            </div>
-          ))}
+            )
+          )}
           <div className='bg-slate-100 block md:hidden'></div>
         </div>
       </section>

@@ -16,6 +16,7 @@ export interface User {
   username: string;
   role: 'teacher' | 'student';
   teacherId: string;
+  voice: { lang: string; name: string };
 }
 
 interface AuthState {

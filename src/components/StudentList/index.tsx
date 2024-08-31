@@ -1,7 +1,10 @@
+import { useNavigate } from 'react-router-dom';
+
+import useFetchVoices from '../../api/use-fetch-voices';
+import useUpdateStudent from '../UpdateStudent/use-update-student';
 import useFetchStudents from '../../api/use-fetch-students';
 import UpdateStudent from '../UpdateStudent';
 import DeleteStudent from '../DeleteStudent';
-
 import {
   Table,
   TableBody,
@@ -13,13 +16,24 @@ import {
 } from '../ui/table';
 import { Loader } from '../Loader';
 import { Button } from '../ui/button';
-import { useNavigate } from 'react-router-dom';
 import { User } from '../../contexts/auth';
+import { SelectVoice } from '../SelectVoice';
 
 export default function StudentList() {
+  const { mutateAsync } = useUpdateStudent();
+  const { voices } = useFetchVoices();
   const { data, isLoading } = useFetchStudents();
   const navigate = useNavigate();
   const { students } = data || {};
+
+  const handleVoiceChange = async (student: User) => {
+    await mutateAsync({
+      _id: student._id,
+      password: '',
+      username: student?.username,
+      voice: student?.voice,
+    });
+  };
 
   return (
     <div className='mt-5'>
@@ -33,6 +47,7 @@ export default function StudentList() {
               <TableHead className='w-[100px]'>No</TableHead>
               <TableHead>Username</TableHead>
               <TableHead>Link</TableHead>
+              <TableHead>Voice</TableHead>
               <TableHead className='text-right'>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -49,6 +64,14 @@ export default function StudentList() {
                     Go to Pages
                   </Button>
                 </TableCell>
+                <TableCell>
+                  <SelectVoice
+                    value={user?.voice}
+                    onChange={(voice) => handleVoiceChange({ ...user, voice })}
+                    options={voices}
+                  />
+                </TableCell>
+
                 <TableCell className='text-right space-x-2'>
                   <UpdateStudent user={user} />
                   <DeleteStudent userId={user._id} />

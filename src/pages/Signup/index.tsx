@@ -1,17 +1,21 @@
 import { Component1Icon } from '@radix-ui/react-icons';
+import { useState } from 'react';
+import { useVoices } from 'react-text-to-speech';
+import { toast } from 'sonner';
+import { AxiosResponse } from 'axios';
+
 import { AuthLayout } from '../../components/layout/AuthLayout';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Separator } from '../../components/ui/separator';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth, User } from '../../contexts/auth';
-import { useState } from 'react';
 import { emailRegex } from '../../utils/constants/validationTokens';
-import { toast } from 'sonner';
 import { httpClient } from '../../lib/httpClient';
-import { AxiosResponse } from 'axios';
+import { DEFAULT_VOICE } from '../../utils/constants/voice';
 
 export default function Signup() {
+  const { voices } = useVoices();
   const { dispatch } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState({
@@ -24,12 +28,16 @@ export default function Signup() {
 
   const isBtnDisabled = !username || !password || isLoading;
 
+  const voice =
+    voices.find((voice) => voice.name === DEFAULT_VOICE.name) || DEFAULT_VOICE;
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
   };
 
-  const handleSignup = async () => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
+      e.preventDefault();
+      if (isBtnDisabled) return;
       setIsLoading(true);
       const isValidEmail = emailRegex.test(username);
 
@@ -47,10 +55,14 @@ export default function Signup() {
         });
       }
 
+      const payload = {
+        ...data,
+        voice: { lang: voice?.lang, name: voice?.name },
+      };
       const response = await httpClient.post<AxiosResponse<{ user: User }>>(
         '/signup',
         {
-          data,
+          data: JSON.stringify(payload),
           includeHeaders: true,
         }
       );
@@ -90,7 +102,7 @@ export default function Signup() {
         </p>
       </div>
 
-      <div className='grid gap-2 w-full'>
+      <form onSubmit={handleSignup} className='grid gap-2 w-full'>
         <Input
           name='username'
           value={username}
@@ -105,15 +117,11 @@ export default function Signup() {
           type='password'
           placeholder='password'
         />
-        <Button
-          onClick={handleSignup}
-          disabled={isBtnDisabled}
-          className='w-full'
-        >
+        <Button type='submit' disabled={isBtnDisabled} className='w-full'>
           {isLoading && <Component1Icon className='mr-2 animate-spin' />}
           Sign up
         </Button>
-      </div>
+      </form>
       <Separator />
       <div>
         <Link to='/signin'>

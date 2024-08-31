@@ -7,6 +7,7 @@ import { User } from '../../contexts/auth';
 interface Payload {
   username: string;
   password: string;
+  voice?: { lang: string; name: string };
   _id: string;
 }
 

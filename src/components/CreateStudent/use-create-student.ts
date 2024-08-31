@@ -6,14 +6,15 @@ import { httpClient } from '../../lib/httpClient';
 interface Payload {
   username: string;
   password: string;
+  voice: { lang: string; name: string };
 }
 
 const createStudent = async (data: Payload) => {
   return httpClient.post('/create-student', {
-    data: {
+    data: JSON.stringify({
       ...data,
       role: 'student',
-    },
+    }),
     headers: {
       'x-authorization': localStorage.getItem('access_token'),
     },
