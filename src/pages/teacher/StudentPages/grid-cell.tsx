@@ -11,6 +11,7 @@ interface GridCellProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   modal?: boolean;
   handleCellClick?: () => void;
+  text?: JSX.Element;
 }
 
 const GridCell = forwardRef<GridCellProps, any>(
@@ -22,6 +23,7 @@ const GridCell = forwardRef<GridCellProps, any>(
       handleDescriptionChange,
       handleCellClick,
       modal = false,
+      text,
     },
     _
   ) => {
@@ -58,15 +60,17 @@ const GridCell = forwardRef<GridCellProps, any>(
             </>
           )}
         </div>
-        <Input
-          disabled={!!userId}
-          value={row?.title || ''}
-          onChange={handleDescriptionChange}
-          type='text'
-          placeholder='Description'
-          className='border-none outline-none focus-visible:ring-0 shadow-none input-field
-      h-[40px] disabled:opacity-100 disabled:cursor-default'
-        />
+        {text || (
+          <Input
+            disabled={!!userId}
+            value={row?.title || ''}
+            onChange={handleDescriptionChange}
+            type='text'
+            placeholder='Description'
+            className='border-none outline-none focus-visible:ring-0 shadow-none input-field
+        h-[40px] disabled:opacity-100 disabled:cursor-default'
+          />
+        )}
       </div>
     );
   }

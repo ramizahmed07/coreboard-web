@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import Speech, { HighlightedText, useVoices } from 'react-text-to-speech';
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -14,8 +15,8 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { httpClient } from '../../../lib/httpClient';
 import { cn } from '../../../lib/utils';
-import Modal from '../../../components/Modal';
-import DetailedGridCell from './detailed-grid-cell';
+import { useAuth } from '../../../contexts/auth';
+import { DEFAULT_VOICE } from '../../../utils/constants/voice';
 
 const pageArr = [
   {},
@@ -46,6 +47,8 @@ const page: any = {
 };
 
 export default function StudentPages({ userId }: { userId?: string }) {
+  const { user } = useAuth();
+  const { voices } = useVoices();
   const { id } = useParams<{ id: string }>();
   const { pathname } = useLocation();
   const { mutate, isPending } = useCreateBoard();
@@ -57,13 +60,18 @@ export default function StudentPages({ userId }: { userId?: string }) {
     (userId || id) as string,
     userId ? pathname + userId : pathname
   );
-  const { student } = data || {};
-  const [open, setOpen] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<any>(null);
   const [pages, setPages] = useState<any>([{ ...page, page: [...pageArr] }]);
   const [selected, setSelected] = useState(0);
   const [editable, setEditable] = useState<number | null>(null);
+
+  const { student } = data || {};
   const isHome = pathname === '/';
+  const voice =
+    voices.find(
+      (voice) =>
+        user?.voice?.name?.includes(voice.name) &&
+        voice.lang === user?.voice?.lang
+    ) || DEFAULT_VOICE;
 
   useEffect(() => {
     if (boardResponse.data?.board?.pages?.length) {
@@ -266,37 +274,47 @@ export default function StudentPages({ userId }: { userId?: string }) {
         <div className='grid grid-cols-3 md:grid-cols-5 bg-black gap-[1px] border-black border'>
           {pages[selected]?.page?.map((row: any, idx: number) =>
             userId ? (
-              <Modal
+              <Speech
+                id={idx.toString()}
                 key={idx}
-                title='Coreboard'
-                trigger={
-                  <GridCell
-                    modal={true}
-                    key={idx}
-                    row={row}
-                    userId={userId}
-                    handleCellClick={() => {
-                      setSelectedRow(row);
-                      setOpen(true);
-                    }}
-                    handleFileChange={(
-                      e: React.ChangeEvent<HTMLInputElement>
-                    ) => handleFileChange(e, idx)}
-                    handleDescriptionChange={(
-                      e: React.ChangeEvent<HTMLInputElement>
-                    ) => handleDescriptionChange(e, idx)}
-                  />
-                }
-                description='Coreboard detailed view'
-                open={open && selectedRow === row && !!Object.keys(row).length}
-                setOpen={setOpen}
+                text={row?.title}
+                highlightText={true}
+                lang={voice?.lang}
+                voiceURI={voice?.voiceURI}
               >
-                <DetailedGridCell row={row} />
-              </Modal>
+                {({ speechStatus, start, pause }) => (
+                  <div
+                    onClick={() => {
+                      if (speechStatus === 'started') pause && pause();
+                      else start && start();
+                    }}
+                    key={idx}
+                  >
+                    <GridCell
+                      text={
+                        <HighlightedText
+                          id={idx.toString()}
+                          className='text-sm py-[10px] mx-3   line-clamp-1 whitespace-nowrap overflow-x-scroll'
+                        >
+                          {row?.title}
+                        </HighlightedText>
+                      }
+                      userId={userId}
+                      row={row}
+                      handleFileChange={(
+                        e: React.ChangeEvent<HTMLInputElement>
+                      ) => handleFileChange(e, idx)}
+                      handleDescriptionChange={(
+                        e: React.ChangeEvent<HTMLInputElement>
+                      ) => handleDescriptionChange(e, idx)}
+                    />
+                  </div>
+                )}
+              </Speech>
             ) : (
               <GridCell
-                userId={userId}
                 key={idx}
+                userId={userId}
                 row={row}
                 handleFileChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleFileChange(e, idx)
